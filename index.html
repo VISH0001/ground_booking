@@ -17,53 +17,78 @@
 const API =
 "https://script.google.com/macros/s/AKfycbyBvhm_rfMx8TgGAcFZmUVwpNJnYdRlvcThu4sf1DlTRz6kZutpzJWy3tFMZbJNmvXN/exec";
 
-let EMAIL, PASSWORD;
+let EMAIL = "", PASSWORD = "";
 
 function login() {
-  EMAIL = email.value;
-  PASSWORD = password.value;
+  EMAIL = email.value.trim();
+  PASSWORD = password.value.trim();
+
   fetch(API, {
-    method:"POST",
-    body:JSON.stringify({action:"login",email:EMAIL,password:PASSWORD})
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action: "login",
+      email: EMAIL,
+      password: PASSWORD
+    })
   })
-  .then(r=>r.json())
-  .then(load)
-  .catch(e=>msg.innerText="Login failed");
+  .then(r => r.json())
+  .then(r => {
+    if (r !== "OK") {
+      msg.innerText = "Login failed";
+      return;
+    }
+    loadSlots();
+  });
 }
 
-function load() {
-  fetch(API+"?action=getSlots")
-    .then(r=>r.json())
+function loadSlots() {
+  fetch(API + "?action=getSlots")
+    .then(r => r.json())
     .then(render);
 }
 
 function render(slots) {
-  let h="<tr><th>Day</th><th>Date</th><th>Morning</th><th>Evening</th></tr>";
-  slots.forEach(s=>{
-    h+=`<tr>
+  let html =
+    "<tr><th>Day</th><th>Date</th><th>Morning</th><th>Evening</th></tr>";
+
+  slots.forEach(s => {
+    html += `<tr>
       <td>${s.day}</td>
       <td>${s.date}</td>
       <td>${cell(s.date,'morning',s.morning)}</td>
       <td>${cell(s.date,'evening',s.evening)}</td>
     </tr>`;
   });
-  table.innerHTML=h;
+
+  table.innerHTML = html;
 }
 
-function cell(d,s,v){
-  if(String(v).toLowerCase()==="open")
-    return `<button onclick="book('${d}','${s}')">BOOK</button>`;
-  return v||"";
+function cell(date, slot, value) {
+  if (String(value).toLowerCase() === "open") {
+    return `<button onclick="book('${date}','${slot}')">BOOK</button>`;
+  }
+  return value || "";
 }
 
-function book(date,slot){
-  fetch(API,{
-    method:"POST",
-    body:JSON.stringify({action:"book",email:EMAIL,password:PASSWORD,date,slot})
+function book(date, slot) {
+  fetch(API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action: "book",
+      email: EMAIL,
+      password: PASSWORD,
+      date: date,
+      slot: slot
+    })
   })
-  .then(r=>r.json())
-  .then(r=>msg.innerText=r)
-  .catch(()=>msg.innerText="Error");
+  .then(r => r.json())
+  .then(r => msg.innerText = r);
 }
 </script>
 
