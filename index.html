@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Cricket Slot Booking</h2>
+
+<table border="1" id="table"></table>
+<p id="msg"></p>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxDle5ab1uhClqYctMirW-5Mp_S8f_sWgnI9WAh-w_7E0j-tOr3L9r5KUZOw670WqYL/exec";
+
+fetch(SCRIPT_URL + "?action=getSlots")
+  .then(r => r.json())
+  .then(render);
+
+function render(slots) {
+  let html = "<tr><th>Day</th><th>Date</th><th>Morning</th><th>Evening</th></tr>";
+  slots.forEach(s => {
+    html += `<tr>
+      <td>${s.day}</td>
+      <td>${s.date}</td>
+      <td>${cell(s.date,'morning',s.morning)}</td>
+      <td>${cell(s.date,'evening',s.evening)}</td>
+    </tr>`;
+  });
+  table.innerHTML = html;
+}
+
+function cell(date, slot, value) {
+  if (String(value).toLowerCase() === "open") {
+    return `<button onclick="book('${date}','${slot}')">BOOK</button>`;
+  }
+  return value || "";
+}
+
+function book(date, slot) {
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ action:"book", date, slot })
+  })
+  .then(r => r.text())
+  .then(t => msg.innerText = t)
+  .catch(e => msg.innerText = e);
+}
+</script>
+</body>
+</html>
