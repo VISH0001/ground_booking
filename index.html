@@ -41,7 +41,8 @@ function login() {
       return;
     }
     loadSlots();
-  });
+  })
+  .catch(() => msg.innerText = "Network error");
 }
 
 function loadSlots() {
@@ -88,7 +89,8 @@ function book(date, slot) {
     })
   })
   .then(r => r.json())
-  .then(r => msg.innerText = r);
+  .then(r => msg.innerText = r)
+  .catch(() => msg.innerText = "Network error");
 }
 </script>
 
